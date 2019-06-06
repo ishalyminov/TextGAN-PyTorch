@@ -4,7 +4,7 @@
 # @FileName     : instructor.py
 # @Time         : Created at 2019-04-25
 # @Blog         : http://zhiweil.ml/
-# @Description  : 
+# @Description  :
 # Copyrights (C) 2018. All Rights Reserved.
 
 import torch
@@ -25,7 +25,7 @@ class BasicInstructor:
         self.show_config()
 
         # load dictionary
-        self.word_index_dict, self.index_word_dict = load_dict(cfg.dataset)
+        self.word_index_dict, self.index_word_dict = load_dict(cfg)
 
         # Dataloader
         self.oracle_data = GenDataIter(cfg.train_data)

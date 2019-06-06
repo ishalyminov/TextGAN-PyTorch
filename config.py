@@ -53,8 +53,8 @@ clip_norm = 5.0
 pre_log_step = 10
 adv_log_step = 20
 
-train_data = 'dataset/' + dataset + '.txt'
-test_data = 'dataset/testdata/' + dataset + '_test.txt'
+# train_data = 'dataset/' + dataset + '.txt'
+# test_data = 'dataset/testdata/' + dataset + '_test.txt'
 
 # =====Generator=====
 ADV_g_step = 1  # 1
@@ -195,8 +195,8 @@ def init_param(opt):
     save_samples_root = save_root + 'samples/'
     save_model_root = save_root + 'models/'
 
-    train_data = 'dataset/' + dataset + '.txt'
-    test_data = 'dataset/testdata/' + dataset + '_test.txt'
+    # target_folder = os.path.join('dataset', dataset)
+    train_data, test_data = opt.train_data, opt.test_data
 
     pretrain_root = 'pretrain/{}/'.format('real_data' if if_real_data else 'oracle_data')
     pretrained_gen_path = pretrain_root + 'gen_MLE_pretrain_{}_{}.pt'.format(run_model, model_type)

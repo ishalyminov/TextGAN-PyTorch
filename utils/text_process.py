@@ -4,7 +4,7 @@
 # @FileName     : text_process.py
 # @Time         : Created at 2019-05-14
 # @Blog         : http://zhiweil.ml/
-# @Description  : 
+# @Description  :
 # Copyrights (C) 2018. All Rights Reserved.
 
 import nltk
@@ -12,6 +12,8 @@ import os
 import torch
 
 import config as cfg
+
+nltk.download('punkt')
 
 
 def get_tokenlized(file):
@@ -73,41 +75,31 @@ def text_precess(train_text_loc, test_text_loc=None):
 
 
 # ========================================================================
-def init_dict():
+def init_dict(config):
     """
     Initialize dictionaries of dataset, please note that '0': padding_idx, '1': start_letter.
     Finally save dictionary files locally.
     """
     # image_coco
-    tokens = get_tokenlized('dataset/image_coco.txt')
-    tokens.extend(get_tokenlized('dataset/testdata/image_coco_test.txt'))
+    tokens = get_tokenlized(config.train_data)
+    tokens.extend(get_tokenlized(config.test_data))
     word_set = get_word_list(tokens)
     word_index_dict, index_word_dict = get_dict(word_set)
 
-    with open('dataset/image_coco_wi_dict.txt', 'w') as dictout:
+    with open('dataset/{}_wi_dict.txt'.format(config.dataset), 'w') as dictout:
         dictout.write(str(word_index_dict))
-    with open('dataset/image_coco_iw_dict.txt', 'w') as dictout:
-        dictout.write(str(index_word_dict))
-
-    # emnlp
-    tokens = get_tokenlized('dataset/emnlp_news.txt')
-    tokens.extend(get_tokenlized('dataset/testdata/emnlp_news_test.txt'))
-    word_set = get_word_list(tokens)
-    word_index_dict, index_word_dict = get_dict(word_set)
-
-    with open('dataset/emnlp_news_wi_dict.txt', 'w') as dictout:
-        dictout.write(str(word_index_dict))
-    with open('dataset/emnlp_news_iw_dict.txt', 'w') as dictout:
+    with open('dataset/{}_iw_dict.txt'.format(config.dataset), 'w') as dictout:
         dictout.write(str(index_word_dict))
 
 
-def load_dict(dataset):
+def load_dict(config):
+    dataset = config.dataset
     """Load dictionary from local files"""
     iw_path = 'dataset/{}_iw_dict.txt'.format(dataset)
     wi_path = 'dataset/{}_wi_dict.txt'.format(dataset)
 
     if not os.path.exists(iw_path) or not os.path.exists(iw_path):  # initialize dictionaries
-        init_dict()
+        init_dict(config)
 
     with open(iw_path, 'r') as dictin:
         index_word_dict = eval(dictin.read().strip())
