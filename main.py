@@ -7,8 +7,9 @@ import config as cfg
 
 def program_config(parser):
     # Program
-    parser.add_argument('--if_test', default=cfg.if_test, type=str)
+    parser.add_argument('--if_test', default=cfg.if_test, type=int)
     parser.add_argument('--run_model', default=cfg.run_model, type=str)
+    parser.add_argument('--dataset', default=cfg.dataset, type=str)
     parser.add_argument('--model_type', default=cfg.model_type, type=str)
     parser.add_argument('--loss_type', default=cfg.loss_type, type=str)
     parser.add_argument('--if_real_data', default=cfg.if_real_data, type=int)
@@ -80,14 +81,13 @@ if __name__ == '__main__':
 
     # =====Dict=====
     if cfg.if_real_data:
+        from instructor.real_data.seqgan_instructor import SeqGANInstructor
+        from instructor.real_data.leakgan_instructor import LeakGANInstructor
         from instructor.real_data.relgan_instructor import RelGANInstructor
 
-        # TODO
-        LeakGANInstructor = None
-        SeqGANInstructor = None
     else:
-        from instructor.oracle_data.leakgan_instructor import LeakGANInstructor
         from instructor.oracle_data.seqgan_instructor import SeqGANInstructor
+        from instructor.oracle_data.leakgan_instructor import LeakGANInstructor
         from instructor.oracle_data.relgan_instructor import RelGANInstructor
     instruction_dict = {
         'leakgan': LeakGANInstructor,
@@ -100,7 +100,3 @@ if __name__ == '__main__':
         inst._run()
     else:
         inst._test()
-    try:
-        inst.log.close()
-    except:
-        pass
