@@ -10,6 +10,7 @@
 import nltk
 import os
 import torch
+from collections import defaultdict
 
 import config as cfg
 
@@ -26,19 +27,34 @@ def get_tokenized(file):
     return tokenlized
 
 
-def get_word_list(tokens):
+def get_vocab(tokens, max_size):
     """get word set"""
-    word_set = list()
+    word_counts = defaultdict(lambda: 0)
+    word_counts[cfg.pad_token] = 999999999
+    word_counts[cfg.start_token] = 999999998
+    word_counts[cfg.eos_token] = 999999997
+    word_counts[cfg.unk_token] = 999999996
+
     for sentence in tokens:
         for word in sentence:
-            word_set.append(word)
-    return list(set(word_set))
+            word_counts[word] += 1
+    word_counts_sorted = sorted(word_counts.items(),
+                                key=lambda x: x[1],
+                                reverse=True)[:max_size]
+    vocab = {}
+    rev_vocab = []
+    for word, freq in word_counts_sorted:
+        vocab[word] = freq
+        rev_vocab.append(word)
+    return vocab, rev_vocab
 
 
-def get_dict(word_set):
+'''
+def get_vocab(word_set, max_vocab_size):
     """get word_index_dict and index_word_dict"""
     word_index_dict = dict()
-    index_word_dict = dict()
+
+    word_set
 
     index = 2
     word_index_dict[cfg.padding_token] = str(cfg.padding_idx)
@@ -51,6 +67,7 @@ def get_dict(word_set):
         index_word_dict[str(index)] = word
         index += 1
     return word_index_dict, index_word_dict
+'''
 
 
 def process_dataset(in_train_file, in_test_file, in_vocab):
@@ -91,8 +108,7 @@ def init_dict(config):
     # image_coco
     tokens = get_tokenized(config.train_data)
     tokens.extend(get_tokenized(config.test_data))
-    word_set = get_word_list(tokens)
-    word_index_dict, index_word_dict = get_dict(word_set)
+    word_index_dict, index_word_dict = get_vocab(tokens)
 
     with open('dataset/{}_wi_dict.txt'.format(config.dataset), 'w') as dictout:
         dictout.write(str(word_index_dict))
@@ -134,15 +150,11 @@ def tokens_to_tensor(tokens, dictionary):
     """transform word tokens to Tensor"""
     tensor = []
     for sent in tokens:
-        sent_ten = []
-        for i, word in enumerate(sent):
-            if word == cfg.padding_token:
-                break
-            sent_ten.append(int(dictionary[str(word)]))
-        while i < cfg.max_seq_len - 1:
-            sent_ten.append(cfg.padding_idx)
-            i += 1
-        tensor.append(sent_ten[:cfg.max_seq_len])
+        sent_ten = [dictionary.get(token, cfg.unk_idx)
+                    for token in sent][:cfg.max_seq_len]
+        sent_ten += [cfg.padding_idx
+                     for _ in max(0, len(sent_ten) - cfg.max_seq_len)]
+        tensor.append(sent_ten)
     return torch.LongTensor(tensor)
 
 

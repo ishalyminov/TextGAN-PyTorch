@@ -42,9 +42,15 @@ inter_epoch = 10  # LeakGAN-10
 batch_size = 64  # 64
 max_seq_len = 20  # 20
 start_letter = 1
+
 padding_idx = 0
+unk_idx = 3
+
+pad_token = 'PAD'
 start_token = 'BOS'
-padding_token = 'EOS'
+eos_token = 'EOS'
+unk_token = 'UNK'
+
 gen_lr = 0.01  # 0.01
 gen_adv_lr = 1e-4  # RelGAN-1e-4
 dis_lr = 1e-4  # SeqGAN,LeakGAN-1e-2, RelGAN-1e-4
