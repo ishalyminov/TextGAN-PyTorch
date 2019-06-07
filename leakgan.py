@@ -39,9 +39,9 @@ def program_config(parser):
     parser.add_argument('--test_data', default='dataset/test.txt', type=str)
     parser.add_argument('--temp_adpt', default='exp', type=str)
     parser.add_argument('--temperature', default=2, type=int)
-    parser.add_argument('--ora_pretrain', default=True, type=int)
-    parser.add_argument('--gen_pretrain', default=True, type=int)
-    parser.add_argument('--dis_pretrain', default=True, type=int)
+    parser.add_argument('--ora_pretrain', default=False, type=int)
+    parser.add_argument('--gen_pretrain', default=False, type=int)
+    parser.add_argument('--dis_pretrain', default=False, type=int)
 
     # Generator
     parser.add_argument('--adv_g_step', default=1, type=int)

@@ -44,7 +44,7 @@ def get_vocab(tokens, max_size):
     vocab = {}
     rev_vocab = []
     for word, freq in word_counts_sorted:
-        vocab[word] = freq
+        vocab[word] = len(rev_vocab) 
         rev_vocab.append(word)
     return vocab, rev_vocab
 
@@ -108,7 +108,7 @@ def init_dict(config):
     # image_coco
     tokens = get_tokenized(config.train_data)
     tokens.extend(get_tokenized(config.test_data))
-    word_index_dict, index_word_dict = get_vocab(tokens)
+    word_index_dict, index_word_dict = get_vocab(tokens, config.vocab_size)
 
     with open('dataset/{}_wi_dict.txt'.format(config.dataset), 'w') as dictout:
         dictout.write(str(word_index_dict))
@@ -141,7 +141,7 @@ def tensor_to_tokens(tensor, dictionary):
         for word in sent.tolist():
             if word == cfg.padding_idx:
                 break
-            sent_token.append(dictionary[str(word)])
+            sent_token.append(dictionary[word])
         tokens.append(sent_token)
     return tokens
 
@@ -153,7 +153,7 @@ def tokens_to_tensor(tokens, dictionary):
         sent_ten = [dictionary.get(token, cfg.unk_idx)
                     for token in sent][:cfg.max_seq_len]
         sent_ten += [cfg.padding_idx
-                     for _ in max(0, len(sent_ten) - cfg.max_seq_len)]
+                     for _ in range(max(0, cfg.max_seq_len - len(sent_ten)))]
         tensor.append(sent_ten)
     return torch.LongTensor(tensor)
 

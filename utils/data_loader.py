@@ -31,7 +31,7 @@ class GenDataIter:
         self.start_letter = cfg.start_letter
         self.shuffle = cfg.data_shuffle
         if cfg.if_real_data:
-            self.word_index_dict, self.index_word_dict = load_dict(cfg.dataset)
+            self.word_index_dict, self.index_word_dict = load_dict(cfg)
 
         self.loader = DataLoader(
             dataset=GANDataset(self.__read_data__(samples)),

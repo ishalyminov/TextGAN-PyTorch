@@ -12,7 +12,7 @@ import torch
 import config as cfg
 from utils.data_loader import GenDataIter
 from utils.helpers import Signal, create_logger
-from utils.text_process import load_dict, write_tokens, tensor_to_tokens
+from utils.text_process import load_dict, write_tokens, tensor_to_tokens, process_dataset
 
 
 class BasicInstructor:
