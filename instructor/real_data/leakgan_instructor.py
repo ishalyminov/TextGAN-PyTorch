@@ -4,7 +4,7 @@
 # @FileName     : leakgan_instructor.py
 # @Time         : Created at 2019-06-05
 # @Blog         : http://zhiweil.ml/
-# @Description  : 
+# @Description  :
 # Copyrights (C) 2018. All Rights Reserved.
 
 import torch
@@ -55,26 +55,22 @@ class LeakGANInstructor(BasicInstructor):
     def _run(self):
         for inter_num in range(cfg.inter_epoch):
             self.log.info('>>> Interleaved Round %d...' % inter_num)
-            self.sig.update()  # update signal
-            if self.sig.pre_sig:
-                # =====DISCRIMINATOR PRE-TRAINING=====
-                if not cfg.dis_pretrain:
-                    self.log.info('Starting Discriminator Training...')
-                    self.train_discriminator(cfg.d_step, cfg.d_epoch)
-                    if cfg.if_save and not cfg.if_test:
-                        torch.save(self.dis.state_dict(), cfg.pretrained_dis_path)
-                        print('Save pre-trained discriminator: {}'.format(cfg.pretrained_dis_path))
-
-                # =====GENERATOR MLE TRAINING=====
-                if not cfg.gen_pretrain:
-                    self.log.info('Starting Generator MLE Training...')
-                    self.pretrain_generator(cfg.MLE_train_epoch)
-                    if cfg.if_save and not cfg.if_test:
-                        torch.save(self.gen.state_dict(), cfg.pretrained_gen_path)
-                        print('Save pre-trained generator: {}'.format(cfg.pretrained_gen_path))
-            else:
-                self.log.info('>>> Stop by pre_signal! Skip to adversarial training...')
-                break
+            # =====DISCRIMINATOR PRE-TRAINING=====
+            '''
+            if not cfg.dis_pretrain:
+                self.log.info('Starting Discriminator Training...')
+                self.train_discriminator(cfg.d_step, cfg.d_epoch)
+                if cfg.if_save and not cfg.if_test:
+                    torch.save(self.dis.state_dict(), cfg.pretrained_dis_path)
+                    print('Save pre-trained discriminator: {}'.format(cfg.pretrained_dis_path))
+            '''
+            # =====GENERATOR MLE TRAINING=====
+            if not cfg.gen_pretrain:
+                self.log.info('Starting Generator MLE Training...')
+                self.pretrain_generator(cfg.MLE_train_epoch)
+                if cfg.if_save and not cfg.if_test:
+                    torch.save(self.gen.state_dict(), cfg.pretrained_gen_path)
+                    print('Save pre-trained generator: {}'.format(cfg.pretrained_gen_path))
 
         # =====ADVERSARIAL TRAINING=====
         self.log.info('Starting Adversarial Training...')
@@ -82,17 +78,12 @@ class LeakGANInstructor(BasicInstructor):
 
         for adv_epoch in range(cfg.ADV_train_epoch):
             self.log.info('-----\nADV EPOCH %d\n-----' % adv_epoch)
-            self.sig.update()
-            if self.sig.adv_sig:
-                self.adv_train_generator(cfg.ADV_g_step)  # Generator
-                self.train_discriminator(cfg.ADV_d_step, cfg.ADV_d_epoch, 'ADV')  # Discriminator
+            self.adv_train_generator(cfg.ADV_g_step)  # Generator
+            self.train_discriminator(cfg.ADV_d_step, cfg.ADV_d_epoch, 'ADV')  # Discriminator
 
-                if adv_epoch % cfg.adv_log_step == 0:
-                    if cfg.if_save and not cfg.if_test:
-                        self._save('ADV', adv_epoch)
-            else:
-                self.log.info('>>> Stop by adv_signal! Finishing adversarial training...')
-                break
+            if adv_epoch % cfg.adv_log_step == 0:
+                if cfg.if_save and not cfg.if_test:
+                    self._save('ADV', adv_epoch)
 
     def _test(self):
         print('>>> Begin test...')
@@ -106,34 +97,29 @@ class LeakGANInstructor(BasicInstructor):
         - gen_opt: [mana_opt, work_opt]
         """
         for epoch in range(epochs):
-            self.sig.update()
-            if self.sig.pre_sig:
-                pre_mana_loss = 0
-                pre_work_loss = 0
+            pre_mana_loss = 0
+            pre_work_loss = 0
 
-                # =====Train=====
-                for i, data in enumerate(self.oracle_data.loader):
-                    inp, target = data['input'], data['target']
-                    if cfg.CUDA:
-                        inp, target = inp.cuda(), target.cuda()
+            # =====Train=====
+            for i, data in enumerate(self.oracle_data.loader):
+                inp, target = data['input'], data['target']
+                if cfg.CUDA:
+                    inp, target = inp.cuda(), target.cuda()
 
-                    mana_loss, work_loss = self.gen.pretrain_loss(target, self.dis)
-                    self.optimize_multi(self.gen_opt, [mana_loss, work_loss])
-                    pre_mana_loss += mana_loss.data.item()
-                    pre_work_loss += work_loss.data.item()
-                pre_mana_loss = pre_mana_loss / len(self.oracle_data.loader)
-                pre_work_loss = pre_work_loss / len(self.oracle_data.loader)
+                mana_loss, work_loss = self.gen.pretrain_loss(target, self.dis)
+                self.optimize_multi(self.gen_opt, [mana_loss, work_loss])
+                pre_mana_loss += mana_loss.data.item()
+                pre_work_loss += work_loss.data.item()
+            pre_mana_loss = pre_mana_loss / len(self.oracle_data.loader)
+            pre_work_loss = pre_work_loss / len(self.oracle_data.loader)
 
-                # =====Test=====
-                if epoch % cfg.pre_log_step == 0:
-                    self.log.info('[MLE-GEN] epoch %d : pre_mana_loss = %.4f, pre_work_loss = %.4f, %s' % (
-                        epoch, pre_mana_loss, pre_work_loss, self.cal_metrics(fmt_str=True)))
+            # =====Test=====
+            if epoch % cfg.pre_log_step == 0:
+                self.log.info('[MLE-GEN] epoch %d : pre_mana_loss = %.4f, pre_work_loss = %.4f, %s' % (
+                    epoch, pre_mana_loss, pre_work_loss, self.cal_metrics(fmt_str=True)))
 
-                    if cfg.if_save and not cfg.if_test:
-                        self._save('MLE', epoch)
-            else:
-                self.log.info('>>> Stop by pre signal, skip to adversarial training...')
-                break
+                if cfg.if_save and not cfg.if_test:
+                    self._save('MLE', epoch)
 
     def adv_train_generator(self, g_step, current_k=0):
         """
