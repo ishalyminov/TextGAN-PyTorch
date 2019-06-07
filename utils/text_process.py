@@ -16,7 +16,7 @@ import config as cfg
 nltk.download('punkt')
 
 
-def get_tokenlized(file):
+def get_tokenized(file):
     """tokenlize the file"""
     tokenlized = list()
     with open(file) as raw:
@@ -53,13 +53,21 @@ def get_dict(word_set):
     return word_index_dict, index_word_dict
 
 
+def process_dataset(in_train_file, in_test_file, in_vocab):
+    """get sequence length and dict size"""
+    train_tokens = get_tokenized(in_train_file)
+    test_tokens = get_tokenized(in_test_file)
+    return (tokens_to_tensor(train_tokens, in_vocab),
+            tokens_to_tensor(test_tokens, in_vocab))
+
+
 def text_precess(train_text_loc, test_text_loc=None):
     """get sequence length and dict size"""
-    train_tokens = get_tokenlized(train_text_loc)
+    train_tokens = get_tokenized(train_text_loc)
     if test_text_loc is None:
         test_tokens = list()
     else:
-        test_tokens = get_tokenlized(test_text_loc)
+        test_tokens = get_tokenized(test_text_loc)
     word_set = get_word_list(train_tokens + test_tokens)
     [word_index_dict, index_word_dict] = get_dict(word_set)
 
@@ -81,8 +89,8 @@ def init_dict(config):
     Finally save dictionary files locally.
     """
     # image_coco
-    tokens = get_tokenlized(config.train_data)
-    tokens.extend(get_tokenlized(config.test_data))
+    tokens = get_tokenized(config.train_data)
+    tokens.extend(get_tokenized(config.test_data))
     word_set = get_word_list(tokens)
     word_index_dict, index_word_dict = get_dict(word_set)
 

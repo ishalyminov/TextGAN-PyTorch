@@ -27,9 +27,12 @@ class BasicInstructor:
         # load dictionary
         self.word_index_dict, self.index_word_dict = load_dict(cfg)
 
+        self.train_data, self.test_data = process_dataset(cfg.train_data,
+                                                          cfg.test_data,
+                                                          self.word_index_dict)
         # Dataloader
-        self.oracle_data = GenDataIter(cfg.train_data)
-        self.test_data = GenDataIter(cfg.test_data)
+        self.oracle_data = GenDataIter(self.train_data)
+        self.test_data = GenDataIter(self.test_data)
 
     def _run(self):
         print('Nothing to run in Basic Instructor!')
