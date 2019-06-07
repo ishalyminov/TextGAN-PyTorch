@@ -5,6 +5,16 @@ import argparse
 import config as cfg
 from instructor.real_data.leakgan_instructor import LeakGANInstructor
 
+def fix_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
 
 def program_config(parser):
     # Program
@@ -18,6 +28,7 @@ def program_config(parser):
     parser.add_argument('--device', default=0, type=int)
     parser.add_argument('--shuffle', default=False, type=int)
     parser.add_argument('--use_truncated_normal', default=True, type=int)
+    parser.add_argument('--random_seed', default=271, type=int)
 
     # Basic Train
     parser.add_argument('--samples_num', default=10000, type=int)
@@ -44,6 +55,8 @@ def program_config(parser):
     parser.add_argument('--dis_pretrain', default=False, type=int)
 
     # Generator
+    parser.add_argument('--g_step', default=5000, type=int)
+    parser.add_argument('--g_epoch', default=5, type=int)
     parser.add_argument('--adv_g_step', default=1, type=int)
     parser.add_argument('--rollout_num', default=4, type=int)
     parser.add_argument('--gen_embed_dim', default=32, type=int)
@@ -55,10 +68,10 @@ def program_config(parser):
     parser.add_argument('--head_size', default=cfg.head_size, type=int)
 
     # Discriminator
-    parser.add_argument('--d_step', default=5, type=int)
-    parser.add_argument('--d_epoch', default=3, type=int)
-    parser.add_argument('--adv_d_step', default=5, type=int)
-    parser.add_argument('--adv_d_epoch', default=3, type=int)
+    parser.add_argument('--d_step', default=5000, type=int)
+    parser.add_argument('--d_epoch', default=5, type=int)
+    parser.add_argument('--adv_d_step', default=5000, type=int)
+    parser.add_argument('--adv_d_epoch', default=5, type=int)
     parser.add_argument('--dis_embed_dim', default=64, type=int)
     parser.add_argument('--dis_hidden_dim', default=64, type=int)
     parser.add_argument('--num_rep', default=cfg.num_rep, type=int)
@@ -79,6 +92,8 @@ if __name__ == '__main__':
     parser = program_config(parser)
     opt = parser.parse_args()
     cfg.init_param(opt)
+
+    fix_random_seed(opt.random_seed)
 
     inst = LeakGANInstructor(opt)
     if not cfg.if_test:

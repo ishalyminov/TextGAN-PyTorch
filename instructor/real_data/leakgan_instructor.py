@@ -67,7 +67,7 @@ class LeakGANInstructor(BasicInstructor):
             # =====GENERATOR MLE TRAINING=====
             if not cfg.gen_pretrain:
                 self.log.info('Starting Generator MLE Training...')
-                self.pretrain_generator(cfg.MLE_train_epoch)
+                self.pretrain_generator(cfg.g_epoch)
                 if cfg.if_save and not cfg.if_test:
                     torch.save(self.gen.state_dict(), cfg.pretrained_gen_path)
                     print('Save pre-trained generator: {}'.format(cfg.pretrained_gen_path))
@@ -101,7 +101,8 @@ class LeakGANInstructor(BasicInstructor):
             pre_work_loss = 0
 
             # =====Train=====
-            for i, data in enumerate(self.oracle_data.loader):
+            for i in range(self.cfg.g_step):
+                data = self.oracle_data.loader.random_batch()
                 inp, target = data['input'], data['target']
                 if cfg.CUDA:
                     inp, target = inp.cuda(), target.cuda()
